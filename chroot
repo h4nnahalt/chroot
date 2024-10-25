@@ -1,0 +1,40 @@
+CHROOT
+usage
+https://youtu.be/xAmyTnSKq88
+
+El comando chroot es una medida de seguridad, Change Root, se usa para ejecutar un programa, haciendole creer que el directorio raíz es distinto del que es en realidad. Asi el servidor solo puede acceder a los archivos que estan enjaulados en ese directorio alternativo, dejando los archivos del directorio raiz intactos.
+
+primero creamos el directorio:
+
+/chroot/h4nnach
+
+este se convertira en el entorno de la jaula
+
+luego creamos una cuenta que no exista en /etc/passwd quedara algo asi:
+
+h4nnach:x:200:200:Nameserver:/chroot/h4nnach:/bin/false
+
+la clave es que esta cuenta es que es especifica para el servidor h4nnach y que es una cuenta del sistema, no deben de usarse nombres de usuarios ya que los valores UID y GUID deben de ser únicos.
+
+y la consola que se utilizara en el ejemplo será /bin/false una que no tiene acceso directo al sistema.
+
+Se creara el entorno chroot incluyendo subdirectorios etc/h4nnach/slave y var/run:
+
+# mkdir -p /chroot/h4nnach
+   # cd /chroot/h4nnach
+   # mkdir -p dev etc/h4nnachb/slave var/run
+
+Sin poner la / al inicio del comando por que si no nos usaria el directorio raiz real en lugar de crearlos dentro de chroot.
+
+Copiamos algunos archivos de configuracion en el nuevo entorno:
+
+# cp -p /etc/named.conf /chroot/h4nnach/etc/
+  # cp -a /var/named/* /chroot/h4nnach/etc/hannachb/
+  # cp /etc/localtime /chroot/h4nnach/etc/
+  # chown -R h4nnach:h4nnach /chroot/h4nnach/etc/h4nnachb/slave
+  # chown h4nnach:h4nnach /chroot/h4nnach/var/run
+  # Mknod /chroot/h4nnach/dev/null c 1 3
+  # mknod /chroot/h4nnach/dev/ramdom c 1 8
+  # chmod 666 /chroot/named/dev/{null,random}
+
+Ahora se debe configurar el archivo de configuracion par iniciar h4nnach con la opcion -t /chroot/h4nnach; esto es lo que hara que se encierre en una jaula cuando se inicie. Debera tener capacidad para modificar los archivos SysV para realizar esta tarea.
